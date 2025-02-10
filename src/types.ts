@@ -11,16 +11,16 @@ export interface ExerciseRecord {
   calories: number;
   pushUps: number;
   sitUps: number;
-  dayNumber: number;
+  day_number: number;
 }
 
 export interface OCDRecord {
   id: string;
   type: 'puasa' | 'cheating';
-  startTime: string;
+  start_time: string;
   level?: 1 | 2 | 3;
-  dayNumber: number;
-  createdAt: string;
+  day_number: number;
+  created_at: string;
   weight?: number; // New field for weight after fasting
 }
 

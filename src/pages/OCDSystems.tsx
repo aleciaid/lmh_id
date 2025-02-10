@@ -13,7 +13,7 @@ export function OCDSystems() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     type: 'puasa' as 'puasa' | 'cheating',
-    startTime: '',
+    start_time: '',
     level: '1' as '1' | '2' | '3',
     weight: ''
   });
@@ -28,7 +28,7 @@ export function OCDSystems() {
     try {
       setLoading(true);
       const allRecords = await storage.getAllOCDRecords();
-      setRecords(allRecords.sort((a, b) => b.dayNumber - a.dayNumber));
+      setRecords(allRecords.sort((a, b) => b.day_number - a.day_number));
     } catch (error) {
       console.error('Error loading records:', error);
       toast.error('Failed to load OCD records');
@@ -48,7 +48,7 @@ export function OCDSystems() {
   function handleTimeNow() {
     setFormData(prev => ({
       ...prev,
-      startTime: getCurrentJakartaDateTime()
+      start_time: getCurrentJakartaDateTime()
     }));
   }
 
@@ -64,10 +64,10 @@ export function OCDSystems() {
       const record: OCDRecord = {
         id: editingRecord?.id || crypto.randomUUID(),
         type: formData.type,
-        startTime: formData.startTime,
+        start_time: formData.start_time,
         level: formData.type === 'puasa' ? Number(formData.level) as 1 | 2 | 3 : undefined,
-        dayNumber: editingRecord?.dayNumber || records.length + 1,
-        createdAt: new Date().toISOString(),
+        day_number: editingRecord?.day_number || records.length + 1,
+        created_at: new Date().toISOString(),
         weight: formData.weight ? Number(formData.weight) : undefined
       };
 
@@ -79,7 +79,7 @@ export function OCDSystems() {
 
       setFormData({
         type: 'puasa',
-        startTime: '',
+        start_time: '',
         level: '1',
         weight: ''
       });
@@ -96,7 +96,7 @@ export function OCDSystems() {
     setEditingRecord(record);
     setFormData({
       type: record.type,
-      startTime: record.startTime,
+      start_time: record.start_time,
       level: record.level?.toString() as '1' | '2' | '3' || '1',
       weight: record.weight?.toString() || ''
     });
@@ -120,8 +120,8 @@ export function OCDSystems() {
     }
   }
 
-  function calculateFastingEndTime(startTime: string, level: number): string {
-    const start = new Date(startTime);
+  function calculateFastingEndTime(start_time: string, level: number): string {
+    const start = new Date(start_time);
     let hours = 16; // Base fasting hours (24 - eating window)
     
     switch (level) {
@@ -141,7 +141,7 @@ export function OCDSystems() {
 
   const filteredRecords = records.filter(record => 
     record.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.dayNumber.toString().includes(searchTerm)
+    record.day_number.toString().includes(searchTerm)
   );
 
   return (
@@ -185,7 +185,7 @@ export function OCDSystems() {
                 onClick={() => {
                   setShowModal(false);
                   setEditingRecord(null);
-                  setFormData({ type: 'puasa', startTime: '', level: '1', weight: '' });
+                  setFormData({ type: 'puasa', start_time: '', level: '1', weight: '' });
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -217,8 +217,8 @@ export function OCDSystems() {
                     <div className="flex space-x-2">
                       <input
                         type="datetime-local"
-                        value={formData.startTime}
-                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        value={formData.start_time}
+                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
                         required
                         className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
@@ -292,7 +292,7 @@ export function OCDSystems() {
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold">
-                  OCD Day {record.dayNumber}
+                  OCD Day {record.day_number}
                 </h3>
                 <div className="flex space-x-2">
                   <button
@@ -323,8 +323,8 @@ export function OCDSystems() {
                 <p>Type: <span className="capitalize">{record.type}</span></p>
                 {record.type === 'puasa' && (
                   <>
-                    <p>Start Time: {new Date(record.startTime).toLocaleString()}</p>
-                    <p>Waktu Berbuka: {calculateFastingEndTime(record.startTime, record.level!)}</p>
+                    <p>Start Time: {new Date(record.start_time).toLocaleString()}</p>
+                    <p>Waktu Berbuka: {calculateFastingEndTime(record.start_time, record.level!)}</p>
                     <p>Level: {record.level} ({record.level === 1 ? '8' : record.level === 2 ? '6' : '4'} jam makan)</p>
                     {record.weight && (
                       <p>Berat Badan: {record.weight} kg</p>

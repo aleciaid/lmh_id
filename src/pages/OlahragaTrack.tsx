@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Edit2, Trash2, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import { 
-  addExerciseRecord, 
-  getAllExerciseRecords, 
-  updateExerciseRecord, 
-  deleteExerciseRecord,
-  getNextDayNumber 
-} from '../db';
 import type { ExerciseRecord } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
@@ -19,10 +12,10 @@ export function OlahragaTrack() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    walkingDuration: '',
+    walking_duration: '',
     calories: '',
-    pushUps: '',
-    sitUps: ''
+    push_ups: '',
+    sit_ups: ''
   });
 
   const { storage, user } = useAuth();
@@ -35,7 +28,8 @@ export function OlahragaTrack() {
     try {
       setLoading(true);
       const allRecords = await storage.getAllExerciseRecords();
-      setRecords(allRecords.sort((a, b) => b.dayNumber - a.dayNumber));
+      // Use snake_case for sorting
+      setRecords(allRecords.sort((a, b) => b.day_number - a.day_number));
     } catch (error) {
       console.error('Error loading records:', error);
       toast.error('Failed to load exercise records');
@@ -61,11 +55,12 @@ export function OlahragaTrack() {
     const record: ExerciseRecord = {
       id: editingRecord?.id || crypto.randomUUID(),
       date: getCurrentJakartaDate(),
-      walkingDuration: Number(formData.walkingDuration),
+      // Use snake_case to match database schema
+      walking_duration: Number(formData.walking_duration),
       calories: Number(formData.calories),
-      pushUps: Number(formData.pushUps),
-      sitUps: Number(formData.sitUps),
-      dayNumber: editingRecord?.dayNumber || await getNextDayNumber()
+      push_ups: Number(formData.push_ups),
+      sit_ups: Number(formData.sit_ups),
+      day_number: editingRecord?.day_number || (records.length > 0 ? Math.max(...records.map(r => r.day_number)) + 1 : 1)
     };
 
     try {
@@ -76,10 +71,10 @@ export function OlahragaTrack() {
       }
 
       setFormData({
-        walkingDuration: '',
+        walking_duration: '',
         calories: '',
-        pushUps: '',
-        sitUps: ''
+        push_ups: '',
+        sit_ups: ''
       });
       setEditingRecord(null);
       await loadRecords();
@@ -92,10 +87,10 @@ export function OlahragaTrack() {
   async function handleEdit(record: ExerciseRecord) {
     setEditingRecord(record);
     setFormData({
-      walkingDuration: record.walkingDuration.toString(),
+      walking_duration: record.walking_duration.toString(),
       calories: record.calories.toString(),
-      pushUps: record.pushUps.toString(),
-      sitUps: record.sitUps.toString()
+      push_ups: record.push_ups.toString(),
+      sit_ups: record.sit_ups.toString()
     });
     setShowForm(true);
   }
@@ -118,12 +113,12 @@ export function OlahragaTrack() {
   }
 
   const filteredRecords = records.filter(record => 
-    record.dayNumber.toString().includes(searchTerm) ||
+    record.day_number.toString().includes(searchTerm) ||
     record.date.includes(searchTerm) ||
-    record.walkingDuration.toString().includes(searchTerm) ||
+    record.walking_duration.toString().includes(searchTerm) ||
     record.calories.toString().includes(searchTerm) ||
-    record.pushUps.toString().includes(searchTerm) ||
-    record.sitUps.toString().includes(searchTerm)
+    record.push_ups.toString().includes(searchTerm) ||
+    record.sit_ups.toString().includes(searchTerm)
   );
 
   return (
@@ -172,8 +167,8 @@ export function OlahragaTrack() {
               </label>
               <input
                 type="number"
-                value={formData.walkingDuration}
-                onChange={(e) => setFormData({ ...formData, walkingDuration: e.target.value })}
+                value={formData.walking_duration}
+                onChange={(e) => setFormData({ ...formData, walking_duration: e.target.value })}
                 required
                 min="0"
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -201,8 +196,8 @@ export function OlahragaTrack() {
               </label>
               <input
                 type="number"
-                value={formData.pushUps}
-                onChange={(e) => setFormData({ ...formData, pushUps: e.target.value })}
+                value={formData.push_ups}
+                onChange={(e) => setFormData({ ...formData, push_ups: e.target.value })}
                 required
                 min="5"
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -214,8 +209,8 @@ export function OlahragaTrack() {
               </label>
               <input
                 type="number"
-                value={formData.sitUps}
-                onChange={(e) => setFormData({ ...formData, sitUps: e.target.value })}
+                value={formData.sit_ups}
+                onChange={(e) => setFormData({ ...formData, sit_ups: e.target.value })}
                 required
                 min="25"
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -248,7 +243,7 @@ export function OlahragaTrack() {
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold">
-                  Olahraga Day {record.dayNumber}
+                  Olahraga Day {record.day_number}
                 </h3>
                 <div className="flex space-x-2">
                   <button
@@ -278,12 +273,12 @@ export function OlahragaTrack() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600">
                 <div>
                   <p>Tanggal: {new Date(record.date).toLocaleDateString()}</p>
-                  <p>Jalan Kaki: {record.walkingDuration} menit</p>
+                  <p>Jalan Kaki: {record.walking_duration} menit</p>
                 </div>
                 <div>
                   <p>Kalori: {record.calories}</p>
-                  <p>Push Up: {record.pushUps}x</p>
-                  <p>Sit Up: {record.sitUps}x</p>
+                  <p>Push Up: {record.push_ups}x</p>
+                  <p>Sit Up: {record.sit_ups}x</p>
                 </div>
               </div>
             </div>
