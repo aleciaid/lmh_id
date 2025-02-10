@@ -9,8 +9,8 @@ export interface ExerciseRecord {
   date: string;
   walkingDuration: number;
   calories: number;
-  pushUps: number;
-  sitUps: number;
+  push_ups: number;
+  sit_ups: number;
   day_number: number;
 }
 

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Storage } from '../lib/storage';
+import { toast } from 'react-hot-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -69,6 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
+    if (!error) {
+      toast.success('Registration successful! Please login to continue.');
+    }
+
     return { error };
   }
 
@@ -78,11 +83,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
     });
 
+    if (!error) {
+      toast.success('Welcome back!');
+    }
+
     return { error };
   }
 
   async function signOut() {
     await supabase.auth.signOut();
+    toast.success('You have been logged out successfully');
   }
 
   const value = {

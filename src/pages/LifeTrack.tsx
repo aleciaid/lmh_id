@@ -42,8 +42,8 @@ export function LifeTrack() {
     return {
       icon: isMorning ? Sunrise : Bed,
       message: isMorning 
-        ? 'Hay pejuang ayo bangun dan ayo kita gerak'
-        : 'Hay pejuang, Jaga kualitas tidurmu ya.',
+        ? 'Hai pejuang ayo bangun dan ayo kita gerak'
+        : 'Hai pejuang, Jaga kualitas tidurmu ya.',
       iconColor: isMorning ? 'text-yellow-500' : 'text-blue-600',
       bgColor: isMorning ? 'bg-yellow-50' : 'bg-blue-50'
     };
@@ -101,11 +101,6 @@ export function LifeTrack() {
   }
 
   async function handleTrack(status: 'bangun' | 'sleep') {
-    if (!user) {
-      toast.error('Please login to track your sleep');
-      return;
-    }
-
     const record: SleepRecord = {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
@@ -197,9 +192,9 @@ export function LifeTrack() {
       <div className="flex space-x-4 mb-8">
         <button
           onClick={() => handleTrack('bangun')}
-          disabled={lastStatus === 'bangun' || !user}
+          disabled={lastStatus === 'bangun'}
           className={`flex items-center space-x-2 px-6 py-3 rounded-lg ${
-            lastStatus === 'bangun' || !user
+            lastStatus === 'bangun'
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
               : 'bg-yellow-500 text-white hover:bg-yellow-600'
           }`}
@@ -210,9 +205,9 @@ export function LifeTrack() {
 
         <button
           onClick={() => handleTrack('sleep')}
-          disabled={lastStatus === 'sleep' || !user}
+          disabled={lastStatus === 'sleep'}
           className={`flex items-center space-x-2 px-6 py-3 rounded-lg ${
-            lastStatus === 'sleep' || !user
+            lastStatus === 'sleep'
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}

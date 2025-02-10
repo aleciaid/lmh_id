@@ -46,16 +46,10 @@ export function OlahragaTrack() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-    if (!user) {
-      toast.error('Please login to add exercise records');
-      return;
-    }
 
     const record: ExerciseRecord = {
       id: editingRecord?.id || crypto.randomUUID(),
       date: getCurrentJakartaDate(),
-      // Use snake_case to match database schema
       walking_duration: Number(formData.walking_duration),
       calories: Number(formData.calories),
       push_ups: Number(formData.push_ups),
@@ -80,7 +74,6 @@ export function OlahragaTrack() {
       await loadRecords();
     } catch (error) {
       console.error('Error saving exercise record:', error);
-      toast.error('Failed to save exercise record');
     }
   }
 
@@ -96,11 +89,6 @@ export function OlahragaTrack() {
   }
 
   async function handleDelete(id: string) {
-    if (!user) {
-      toast.error('Please login to delete records');
-      return;
-    }
-
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
         await storage.deleteExerciseRecord(id);
@@ -220,12 +208,7 @@ export function OlahragaTrack() {
 
           <button
             type="submit"
-            disabled={!user}
-            className={`w-full py-2 px-4 rounded-lg ${
-              user 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            } transition-colors`}
+            className="w-full py-2 px-4 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
           >
             {editingRecord ? 'Update Record' : 'Submit'}
           </button>
@@ -248,23 +231,13 @@ export function OlahragaTrack() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleEdit(record)}
-                    disabled={!user}
-                    className={`p-2 rounded-lg ${
-                      user 
-                        ? 'text-blue-600 hover:bg-blue-50' 
-                        : 'text-gray-400 cursor-not-allowed'
-                    }`}
+                    className="p-2 rounded-lg text-blue-600 hover:bg-blue-50"
                   >
                     <Edit2 size={20} />
                   </button>
                   <button
                     onClick={() => handleDelete(record.id)}
-                    disabled={!user}
-                    className={`p-2 rounded-lg ${
-                      user 
-                        ? 'text-red-600 hover:bg-red-50' 
-                        : 'text-gray-400 cursor-not-allowed'
-                    }`}
+                    className="p-2 rounded-lg text-red-600 hover:bg-red-50"
                   >
                     <Trash2 size={20} />
                   </button>

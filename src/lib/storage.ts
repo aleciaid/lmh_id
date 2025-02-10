@@ -20,7 +20,7 @@ async function initLocalDB() {
       }
       if (!db.objectStoreNames.contains('ocdRecords')) {
         const ocdStore = db.createObjectStore('ocdRecords', { keyPath: 'id' });
-        ocdStore.createIndex('by-created', 'createdAt');
+        ocdStore.createIndex('by-created', 'created_at');
       }
     },
   });
@@ -71,7 +71,7 @@ export class Storage {
         toast.success('Sleep record saved successfully!');
       } else {
         const db = await this.getDB();
-        await db.add('sleepRecords', record);
+        await db.put('sleepRecords', record);
         toast.success('Sleep record saved locally!');
       }
     } catch (error) {
@@ -93,7 +93,8 @@ export class Storage {
         return data;
       } else {
         const db = await this.getDB();
-        return await db.getAllFromIndex('sleepRecords', 'by-timestamp');
+        const records = await db.getAllFromIndex('sleepRecords', 'by-timestamp');
+        return records.reverse(); // Return in descending order
       }
     } catch (error) {
       console.error('Error fetching sleep records:', error);
@@ -134,7 +135,7 @@ export class Storage {
         toast.success('Exercise record saved successfully!');
       } else {
         const db = await this.getDB();
-        await db.add('exerciseRecords', record);
+        await db.put('exerciseRecords', record);
         toast.success('Exercise record saved locally!');
       }
     } catch (error) {
@@ -156,7 +157,8 @@ export class Storage {
         return data;
       } else {
         const db = await this.getDB();
-        return await db.getAllFromIndex('exerciseRecords', 'by-date');
+        const records = await db.getAllFromIndex('exerciseRecords', 'by-date');
+        return records.reverse(); // Return in descending order
       }
     } catch (error) {
       console.error('Error fetching exercise records:', error);
@@ -218,7 +220,7 @@ export class Storage {
         toast.success('OCD record saved successfully!');
       } else {
         const db = await this.getDB();
-        await db.add('ocdRecords', record);
+        await db.put('ocdRecords', record);
         toast.success('OCD record saved locally!');
       }
     } catch (error) {
@@ -240,7 +242,13 @@ export class Storage {
         return data;
       } else {
         const db = await this.getDB();
-        return await db.getAllFromIndex('ocdRecords', 'by-created');
+        const records = await db.getAll('ocdRecords');
+        return records.sort((a, b) => {
+          if (b.day_number !== a.day_number) {
+            return b.day_number - a.day_number;
+          }
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
       }
     } catch (error) {
       console.error('Error fetching OCD records:', error);

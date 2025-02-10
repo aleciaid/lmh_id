@@ -13,12 +13,12 @@ export function OCDSystems() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     type: 'puasa' as 'puasa' | 'cheating',
-    start_time: '',
+    start_time: getCurrentJakartaDateTime(), // Initialize with current time
     level: '1' as '1' | '2' | '3',
     weight: ''
   });
 
-  const { storage, user } = useAuth();
+  const { storage } = useAuth();
 
   useEffect(() => {
     loadRecords();
@@ -28,10 +28,15 @@ export function OCDSystems() {
     try {
       setLoading(true);
       const allRecords = await storage.getAllOCDRecords();
-      setRecords(allRecords.sort((a, b) => b.day_number - a.day_number));
+      const sortedRecords = allRecords.sort((a, b) => {
+        if (b.day_number !== a.day_number) {
+          return b.day_number - a.day_number;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      setRecords(sortedRecords);
     } catch (error) {
       console.error('Error loading records:', error);
-      toast.error('Failed to load OCD records');
     } finally {
       setLoading(false);
     }
@@ -52,43 +57,54 @@ export function OCDSystems() {
     }));
   }
 
+  function resetForm() {
+    setFormData({
+      type: 'puasa',
+      start_time: getCurrentJakartaDateTime(),
+      level: '1',
+      weight: ''
+    });
+    setEditingRecord(null);
+    setShowModal(false);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-    if (!user) {
-      toast.error('Please login to add OCD records');
+
+    // Validate start_time
+    if (formData.type === 'puasa' && !formData.start_time) {
+      toast.error('Please set a start time');
       return;
     }
 
     try {
+      const nextDayNumber = records.length > 0 
+        ? Math.max(...records.map(r => r.day_number)) + 1 
+        : 1;
+
       const record: OCDRecord = {
         id: editingRecord?.id || crypto.randomUUID(),
         type: formData.type,
-        start_time: formData.start_time,
+        start_time: formData.type === 'puasa' ? formData.start_time : getCurrentJakartaDateTime(),
         level: formData.type === 'puasa' ? Number(formData.level) as 1 | 2 | 3 : undefined,
-        day_number: editingRecord?.day_number || records.length + 1,
+        day_number: editingRecord?.day_number || nextDayNumber,
         created_at: new Date().toISOString(),
         weight: formData.weight ? Number(formData.weight) : undefined
       };
 
       if (editingRecord) {
         await storage.updateOCDRecord(record);
+        toast.success('Record updated successfully');
       } else {
         await storage.addOCDRecord(record);
+        toast.success('Record added successfully');
       }
 
-      setFormData({
-        type: 'puasa',
-        start_time: '',
-        level: '1',
-        weight: ''
-      });
-      setEditingRecord(null);
-      setShowModal(false);
+      resetForm();
       await loadRecords();
     } catch (error) {
       console.error('Error saving OCD record:', error);
-      toast.error('Failed to save OCD record');
+      toast.error('Failed to save record');
     }
   }
 
@@ -104,14 +120,10 @@ export function OCDSystems() {
   }
 
   async function handleDelete(id: string) {
-    if (!user) {
-      toast.error('Please login to delete records');
-      return;
-    }
-
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
         await storage.deleteOCDRecord(id);
+        toast.success('Record deleted successfully');
         await loadRecords();
       } catch (error) {
         console.error('Error deleting record:', error);
@@ -122,17 +134,17 @@ export function OCDSystems() {
 
   function calculateFastingEndTime(start_time: string, level: number): string {
     const start = new Date(start_time);
-    let hours = 16; // Base fasting hours (24 - eating window)
+    let hours = 16;
     
     switch (level) {
       case 2:
-        hours = 18; // 24 - 6 hours eating window
+        hours = 18;
         break;
       case 3:
-        hours = 20; // 24 - 4 hours eating window
+        hours = 20;
         break;
       default:
-        hours = 16; // 24 - 8 hours eating window
+        hours = 16;
     }
     
     const end = new Date(start.getTime() + hours * 60 * 60 * 1000);
@@ -161,12 +173,7 @@ export function OCDSystems() {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            disabled={!user}
-            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg ${
-              user 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            } transition-colors`}
+            className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
             <span>Add Record</span>
@@ -182,11 +189,7 @@ export function OCDSystems() {
                 {editingRecord ? 'Edit Record' : 'Add New Record'}
               </h2>
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditingRecord(null);
-                  setFormData({ type: 'puasa', start_time: '', level: '1', weight: '' });
-                }}
+                onClick={resetForm}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={20} />
@@ -297,23 +300,13 @@ export function OCDSystems() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleEdit(record)}
-                    disabled={!user}
-                    className={`p-2 rounded-lg ${
-                      user 
-                        ? 'text-blue-600 hover:bg-blue-50' 
-                        : 'text-gray-400 cursor-not-allowed'
-                    }`}
+                    className="p-2 rounded-lg text-blue-600 hover:bg-blue-50"
                   >
                     <Edit2 size={20} />
                   </button>
                   <button
                     onClick={() => handleDelete(record.id)}
-                    disabled={!user}
-                    className={`p-2 rounded-lg ${
-                      user 
-                        ? 'text-red-600 hover:bg-red-50' 
-                        : 'text-gray-400 cursor-not-allowed'
-                    }`}
+                    className="p-2 rounded-lg text-red-600 hover:bg-red-50"
                   >
                     <Trash2 size={20} />
                   </button>
