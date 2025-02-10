@@ -21,6 +21,7 @@ export interface OCDRecord {
   level?: 1 | 2 | 3;
   dayNumber: number;
   createdAt: string;
+  weight?: number; // New field for weight after fasting
 }
 
 export interface DBSchema {

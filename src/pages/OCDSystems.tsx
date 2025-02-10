@@ -17,7 +17,8 @@ export function OCDSystems() {
   const [formData, setFormData] = useState({
     type: 'puasa' as 'puasa' | 'cheating',
     startTime: '',
-    level: '1' as '1' | '2' | '3'
+    level: '1' as '1' | '2' | '3',
+    weight: ''
   });
 
   useEffect(() => {
@@ -53,7 +54,8 @@ export function OCDSystems() {
       startTime: formData.startTime,
       level: formData.type === 'puasa' ? Number(formData.level) as 1 | 2 | 3 : undefined,
       dayNumber: editingRecord?.dayNumber || await getNextOCDDayNumber(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      weight: formData.weight ? Number(formData.weight) : undefined
     };
 
     if (editingRecord) {
@@ -65,7 +67,8 @@ export function OCDSystems() {
     setFormData({
       type: 'puasa',
       startTime: '',
-      level: '1'
+      level: '1',
+      weight: ''
     });
     setEditingRecord(null);
     setShowModal(false);
@@ -77,7 +80,8 @@ export function OCDSystems() {
     setFormData({
       type: record.type,
       startTime: record.startTime,
-      level: record.level?.toString() as '1' | '2' | '3' || '1'
+      level: record.level?.toString() as '1' | '2' | '3' || '1',
+      weight: record.weight?.toString() || ''
     });
     setShowModal(true);
   }
@@ -89,28 +93,19 @@ export function OCDSystems() {
     }
   }
 
-  function getEatingWindow(level: number) {
-    switch (level) {
-      case 1: return '8 jam';
-      case 2: return '6 jam';
-      case 3: return '4 jam';
-      default: return '';
-    }
-  }
-
-  function calculateEndTime(startTime: string, level: number): string {
+  function calculateFastingEndTime(startTime: string, level: number): string {
     const start = new Date(startTime);
-    let hours = 8;
+    let hours = 16; // Base fasting hours (24 - eating window)
     
     switch (level) {
       case 2:
-        hours = 6;
+        hours = 18; // 24 - 6 hours eating window
         break;
       case 3:
-        hours = 4;
+        hours = 20; // 24 - 4 hours eating window
         break;
       default:
-        hours = 8;
+        hours = 16; // 24 - 8 hours eating window
     }
     
     const end = new Date(start.getTime() + hours * 60 * 60 * 1000);
@@ -158,7 +153,7 @@ export function OCDSystems() {
                 onClick={() => {
                   setShowModal(false);
                   setEditingRecord(null);
-                  setFormData({ type: 'puasa', startTime: '', level: '1' });
+                  setFormData({ type: 'puasa', startTime: '', level: '1', weight: '' });
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -220,6 +215,22 @@ export function OCDSystems() {
                       <option value="3">Level 3 - 4 jam makan</option>
                     </select>
                   </div>
+
+                  {editingRecord && (
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Berat Badan Setelah Puasa (kg)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.weight}
+                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                        placeholder="Masukkan berat badan"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-lg">
@@ -268,8 +279,11 @@ export function OCDSystems() {
               {record.type === 'puasa' && (
                 <>
                   <p>Start Time: {new Date(record.startTime).toLocaleString()}</p>
-                  <p>End Time: {calculateEndTime(record.startTime, record.level!)}</p>
-                  <p>Level: {record.level} ({getEatingWindow(record.level!)})</p>
+                  <p>Waktu Berbuka: {calculateFastingEndTime(record.startTime, record.level!)}</p>
+                  <p>Level: {record.level} ({record.level === 1 ? '8' : record.level === 2 ? '6' : '4'} jam makan)</p>
+                  {record.weight && (
+                    <p>Berat Badan: {record.weight} kg</p>
+                  )}
                 </>
               )}
             </div>
