@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { LifeTrack } from './pages/LifeTrack';
 import { OlahragaTrack } from './pages/OlahragaTrack';
 import { OCDSystems } from './pages/OCDSystems';
+import { Changelog } from './pages/Changelog';
 import { AuthPage } from './pages/auth/AuthPage';
 import { Console } from './pages/admin/Console';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/life-track" element={<LifeTrack />} />
               <Route path="/olahraga-track" element={<OlahragaTrack />} />
               <Route path="/ocd-systems" element={<OCDSystems />} />
+              <Route path="/changelog" element={<Changelog />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route
                 path="/admin/console"
@@ -53,4 +55,4 @@ function App() {
   );
 }
 
-export default App;
+export default App

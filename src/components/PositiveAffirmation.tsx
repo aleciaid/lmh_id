@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const morningEmojis = ['🌅', '🌞', '🌻', '🍀', '✨', '🌈', '🎈', '🦋', '🐣', '🌸'];
 const afternoonEmojis = ['🌤️', '🌺', '🍃', '🌿', '🦄', '🎨', '🎭', '🎪', '🎡', '🎠'];
@@ -8,6 +9,7 @@ const nightEmojis = ['🌜', '💫', '🌠', '🎆', '🌃', '🦉', '🐱', '�
 export function PositiveAffirmation() {
   const [affirmation, setAffirmation] = useState('');
   const [emoji, setEmoji] = useState('');
+  const { user } = useAuth();
 
   useEffect(() => {
     function updateAffirmation() {
@@ -17,21 +19,22 @@ export function PositiveAffirmation() {
 
       let message = '';
       let emojiList: string[] = [];
+      const username = user?.user_metadata?.username || 'Pejuang';
 
       if (hour >= 5 && hour < 12) {
-        message = 'Hay Pejuang, Selamat pagi dan jangan lupa aktivitas yang sehat hari ini';
+        message = `Hai ${username}, Selamat pagi dan jangan lupa aktivitas yang sehat hari ini`;
         emojiList = morningEmojis;
       } else if (hour >= 12 && hour < 15) {
-        message = 'Hay Pejuang, Selamat siang! Tetap semangat dan jaga energimu';
+        message = `Hai ${username}, Selamat siang! Tetap semangat dan jaga energimu`;
         emojiList = afternoonEmojis;
-      } else if (hour >= 15 && hour < 21) { // Changed from 18 to 21 (9 PM)
-        message = 'Hay Pejuang, Selamat sore! Bagaimana harimu? Tetap positif ya';
+      } else if (hour >= 15 && hour < 21) {
+        message = `Hai ${username}, Selamat sore! Bagaimana harimu? Tetap positif ya`;
         emojiList = eveningEmojis;
-      } else if ((hour >= 21 && hour <= 23) || (hour >= 0 && hour < 4.83)) { // 4.83 is approximately 4:50 AM
-        message = 'Hay Pejuang, Selamat malam jangan lupa tidur tepat waktu ya';
+      } else if ((hour >= 21 && hour <= 23) || (hour >= 0 && hour < 4.83)) {
+        message = `Hai ${username}, Selamat malam jangan lupa tidur tepat waktu ya`;
         emojiList = nightEmojis;
       } else {
-        message = 'Hay Pejuang, Selamat pagi! Sudah waktunya bangun dan memulai hari';
+        message = `Hai ${username}, Selamat pagi! Sudah waktunya bangun dan memulai hari`;
         emojiList = morningEmojis;
       }
 
@@ -45,7 +48,7 @@ export function PositiveAffirmation() {
     const interval = setInterval(updateAffirmation, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   return (
     <div className="mt-auto p-4 bg-gray-700 rounded-lg text-white text-sm">
