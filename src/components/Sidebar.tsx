@@ -113,7 +113,7 @@ export function Sidebar() {
               }`}
             >
               <History size={20} />
-              <span>Changelog</span>
+              <span>Changelogs</span>
               {hasNewChangelog && (
                 <span className="absolute top-3 right-3 h-2 w-2 bg-red-500 rounded-full"></span>
               )}
